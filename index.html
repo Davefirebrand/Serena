@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Serena’s Valentine Game 💘</title>
+
+  <style>
+    :root{
+      --glass: rgba(255,255,255,.14);
+      --glass2: rgba(255,255,255,.08);
+      --stroke: rgba(255,255,255,.22);
+      --shadow: 0 14px 50px rgba(0,0,0,.45);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.75);
+      --pink1:#ff3d7f;
+      --pink2:#ff8fb1;
+      --good:#2dffb5;
+      --bad:#ff5a5a;
+      --cardRadius: 22px;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body { height:100%; margin:0; }
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:#070712;
+      overflow:hidden;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select:none;
+    }
+
+    /* Background photo */
+    .bg-photo{
+      position:fixed; inset:0;
+      background-image: url("assets/bg.jpeg");
+      background-size: cover;
+      background-position: center;
+      filter: blur(2px) brightness(.62);
+      transform: scale(1.03);
+      z-index:-5;
+    }
+    .bg-glow{
+      position:fixed; inset:0;
+      background:
+        radial-gradient(900px 650px at 20% 20%, rgba(255,61,127,.22), transparent 55%),
+        radial-gradient(900px 650px at 85% 25%, rgba(255,143,177,.18), transparent 55%),
+        radial-gradient(950px 700px at 50% 95%, rgba(45,255,181,.10), transparent 60%),
+        linear-gradient(180deg, rgba(8,8,16,.75), rgba(6,6,14,.92));
+      z-index:-4;
+    }
+    .vignette{
+      position:fixed; inset:0;
+      background: radial-gradient(circle at 50% 30%, transparent 0 55%, rgba(0,0,0,.55) 85%);
+      z-index:-3;
+      pointer-events:none;
+    }
+
+    /* Floating background hearts layer */
+    #floatLayer{
+      position:fixed; inset:0;
+      z-index:-2;
+      pointer-events:none;
+      overflow:hidden;
+    }
+    .floatHeart{
+      position:absolute;
+      opacity:.18;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+      will-change: transform, opacity;
+      animation: floatUp linear forwards;
+    }
+    @keyframes floatUp{
+      0%   { transform: translateY(30px) scale(.9) rotate(0deg); opacity: 0; }
+      10%  { opacity: .20; }
+      100% { transform: translateY(-115vh) scale(1.25) rotate(18deg); opacity: 0; }
+    }
+
+    .wrap{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom) 12px;
+      gap:10px;
+    }
+
+    header{
+      border:1px solid var(--stroke);
+      background: linear-gradient(135deg, var(--glass), var(--glass2));
+      border-radius: var(--cardRadius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      padding:12px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .leftTitle{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      flex: 1 1 260px;
+    }
+    .leftTitle b{
+      font-size:14px;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .leftTitle span{
+      font-size:12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .stats{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      flex: 0 0 auto;
+    }
+    .pill{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.08);
+      font-size:12px;
+      color: var(--muted);
+    }
+    .pill strong{ color: var(--text); font-weight:900; }
+
+    .btnRow{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+      flex: 0 0 auto;
+    }
+    button{
+      border:0;
+      border-radius:16px;
+      padding:11px 14px;
+      font-weight:950;
+      cursor:pointer;
+      color:#061018;
+      background: linear-gradient(135deg, var(--pink1), var(--pink2));
+      box-shadow: 0 12px 22px rgba(255,61,127,.25);
+      transition: transform .08s ease;
+      touch-action: manipulation;
+    }
+    button:active{ transform: scale(.98); }
+    .ghost{
+      background: rgba(255,255,255,.12);
+      color: var(--text);
+      border:1px solid var(--stroke);
+      box-shadow:none;
+      font-weight:850;
+    }
+
+    /* Photo strip */
+    .photos{
+      border:1px solid var(--stroke);
+      background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      border-radius: var(--cardRadius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      padding:10px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:8px;
+    }
+    .photo{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.16);
+      height: 88px;
+      background-size:cover;
+      background-position:center;
+      overflow:hidden;
+      position:relative;
+    }
+    .photo::after{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.28));
+      pointer-events:none;
+    }
+
+    /* Game card */
+    #game{
+      flex:1;
+      min-height: 360px;
+      border:1px solid var(--stroke);
+      background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      border-radius: calc(var(--cardRadius) + 2px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      position:relative;
+      overflow:hidden;
+
+      /* key: prevent scrolling while playing */
+      touch-action: none;
+    }
+    #game * { touch-action: none; }
+
+    /* Start overlay */
+    #startOverlay{
+      position:absolute; inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      background: radial-gradient(circle at 50% 25%, rgba(255,61,127,.22), rgba(0,0,0,.52));
+    }
+    .panel{
+      width:min(560px, 100%);
+      border-radius: 26px;
+      border:1px solid rgba(255,255,255,.18);
+      background: linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+      box-shadow: var(--shadow);
+      padding:16px;
+      text-align:center;
+      backdrop-filter: blur(14px);
+    }
+    .panel .big{
+      font-size:38px;
+      margin-bottom:8px;
+    }
+    .panel h1{
+      margin:0 0 6px;
+      font-size:18px;
+    }
+    .panel p{
+      margin:0 0 12px;
+      font-size:13px;
+      color: var(--muted);
+      line-height:1.35;
+    }
+    .hint{
+      font-size:12px;
+      color: rgba(255,255,255,.78);
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius: 16px;
+      padding:10px 12px;
+      text-align:left;
+      margin:10px 0 12px;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+
+    /* Tap-friendly heart hitbox (BIG!) */
+    .heart{
+      position:absolute;
+      width: 78px;
+      height: 78px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 42px;
+      will-change: transform, opacity;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
+      user-select:none;
+      touch-action:none;
+      cursor:pointer;
+    }
+
+    /* Result Modal */
+    #modal{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      background: rgba(0,0,0,.62);
+      z-index:50;
+    }
+    #modal.show{ display:flex; }
+    .modalCard{
+      width:min(600px, 100%);
+      border-radius: 28px;
+      border:1px solid rgba(255,255,255,.18);
+      background: linear-gradient(135deg, rgba(255,255,255,.20), rgba(255,255,255,.08));
+      box-shadow: var(--shadow);
+      padding:18px;
+      text-align:center;
+      backdrop-filter: blur(16px);
+      position:relative;
+      overflow:hidden;
+    }
+    .modalCard::before{
+      content:"";
+      position:absolute; inset:-40px;
+      background:
+        radial-gradient(600px 260px at 30% 10%, rgba(255,61,127,.25), transparent 60%),
+        radial-gradient(600px 260px at 75% 30%, rgba(255,143,177,.16), transparent 60%);
+      pointer-events:none;
+    }
+    .modalCard > *{ position:relative; }
+    .modalEmoji{ font-size:44px; }
+    .modalCard h2{ margin:6px 0 8px; font-size:20px; }
+    .bigLine{
+      font-size:18px;
+      font-weight:1000;
+      margin:10px 0 8px;
+      color:#fff;
+    }
+    .modalCard p{
+      margin:0 0 14px;
+      color: var(--muted);
+      line-height:1.4;
+      font-size:13px;
+    }
+
+    .tiny{
+      font-size:11px;
+      color: rgba(255,255,255,.65);
+      text-align:center;
+      padding-bottom:2px;
+    }
+
+    @media (max-width: 420px){
+      .btnRow button{ width:100%; }
+      .stats{ width:100%; justify-content:flex-start; }
+      .btnRow{ width:100%; }
+      .photos{ grid-template-columns: repeat(3, 1fr); }
+      .photo{ height: 84px; }
+      .heart{ width:84px; height:84px; font-size:44px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-photo"></div>
+  <div class="bg-glow"></div>
+  <div class="vignette"></div>
+  <div id="floatLayer" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="leftTitle">
+        <b>Catch My Heart 💘</b>
+        <span>Tap 💚 hearts. Avoid ❤️‍🔥. Win or lose… there’s a message 💌</span>
+      </div>
+
+      <div class="stats">
+        <div class="pill">Score: <strong id="score">0</strong></div>
+        <div class="pill">Time: <strong id="time">22</strong>s</div>
+        <div class="pill">Target: <strong id="target">10</strong></div>
+      </div>
+
+      <div class="btnRow">
+        <button class="ghost" id="musicBtn" type="button">🔊 Music: Off</button>
+        <button id="startBtn" type="button">Start</button>
+      </div>
+    </header>
+
+    <section class="photos" aria-label="Serena photos">
+      <div class="photo" style="background-image:url('assets/serena1.jpeg')"></div>
+      <div class="photo" style="background-image:url('assets/serena2.jpeg')"></div>
+      <div class="photo" style="background-image:url('assets/serena3.jpeg')"></div>
+    </section>
+
+    <main id="game" aria-label="game area">
+      <div id="startOverlay">
+        <div class="panel">
+          <div class="big">💘</div>
+          <h1>Ready, Serena?</h1>
+          <p>Catch <b>10</b> good hearts in <b>22</b> seconds. You can do it 😄</p>
+
+          <div class="hint">
+            <b>How to play:</b><br/>
+            • Tap 💚 to gain points<br/>
+            • Tap ❤️‍🔥 and you lose points<br/>
+            • Reach the target before time ends
+          </div>
+
+          <div class="row">
+            <button id="startBtn2" type="button">Start Game</button>
+            <button class="ghost" id="toggleMusic2" type="button">Toggle Music</button>
+          </div>
+
+          <div class="tiny" style="margin-top:10px;">
+            Music needs a tap on phones — tap “Toggle Music” once if needed.
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="tiny">Made with 💗 Dave</div>
+  </div>
+
+  <!-- Result Modal -->
+  <div id="modal" role="dialog" aria-modal="true">
+    <div class="modalCard">
+      <div class="modalEmoji" id="resultEmoji">💘</div>
+      <h2 id="resultTitle">Result</h2>
+      <div class="bigLine" id="resultLine"></div>
+      <p id="resultText"></p>
+
+      <div class="row">
+        <button id="yesBtn" type="button" style="display:none;">YES 💘</button>
+        <button id="playAgain" type="button">Play Again</button>
+        <button class="ghost" id="closeModal" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Background music -->
+  <audio id="bgMusic" loop>
+    <source src="assets/music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script>
+    /************ IMPORTANT: PUT YOUR WHATSAPP NUMBER HERE ************
+     * Use international format with NO plus sign.
+     * Example Nigeria: 2348012345678 (example only).
+     ******************************************************************/
+    const YOUR_WHATSAPP_NUMBER = "234XXXXXXXXXX"; // <-- CHANGE THIS
+
+    const CONFIG = {
+      durationSeconds: 22,
+      targetScore: 10,
+      spawnEveryMs: 650,
+      fallDurationMs: [2600, 4200],   // slower = easier
+      goodHeartChance: 0.75,
+      goodPoints: 1,
+      badPoints: -1,                 // less punishing
+      vibrateOnTap: true,
+      floatingHearts: true
+    };
+
+    const scoreEl = document.getElementById("score");
+    const timeEl = document.getElementById("time");
+    const targetEl = document.getElementById("target");
+    const gameEl = document.getElementById("game");
+    const startOverlay = document.getElementById("startOverlay");
+
+    const startBtn = document.getElementById("startBtn");
+    const startBtn2 = document.getElementById("startBtn2");
+    const toggleMusic2 = document.getElementById("toggleMusic2");
+    const musicBtn = document.getElementById("musicBtn");
+    const bgMusic = document.getElementById("bgMusic");
+
+    const modal = document.getElementById("modal");
+    const resultEmoji = document.getElementById("resultEmoji");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultLine = document.getElementById("resultLine");
+    const resultText = document.getElementById("resultText");
+    const playAgain = document.getElementById("playAgain");
+    const closeModal = document.getElementById("closeModal");
+    const yesBtn = document.getElementById("yesBtn");
+
+    const floatLayer = document.getElementById("floatLayer");
+
+    let score = 0;
+    let timeLeft = CONFIG.durationSeconds;
+    let running = false;
+    let spawnTimer = null;
+    let countdownTimer = null;
+    let musicOn = false;
+
+    targetEl.textContent = CONFIG.targetScore;
+    timeEl.textContent = CONFIG.durationSeconds;
+
+    // Tap sound using WebAudio (no extra files)
+    let audioCtx = null;
+    function tapSound(type="good"){
+      try{
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const t0 = audioCtx.currentTime;
+
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+
+        o.type = "sine";
+        o.frequency.value = type === "good" ? 880 : 220;
+
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.14, t0 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.10);
+
+        o.connect(g);
+        g.connect(audioCtx.destination);
+
+        o.start(t0);
+        o.stop(t0 + 0.11);
+      } catch(e){}
+    }
+
+    function vibrate(ms){
+      if(CONFIG.vibrateOnTap && navigator.vibrate) navigator.vibrate(ms);
+    }
+
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+    function setScore(val){ score = val; scoreEl.textContent = score; }
+    function setTime(val){ timeLeft = val; timeEl.textContent = timeLeft; }
+    function showModal(show){ modal.classList.toggle("show", show); }
+    function showOverlay(show){ startOverlay.style.display = show ? "flex" : "none"; }
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    // Floating hearts
+    function spawnFloatingHeart(){
+      if(!CONFIG.floatingHearts) return;
+      const h = document.createElement("div");
+      h.className = "floatHeart";
+      h.textContent = Math.random() < 0.7 ? "💗" : "💞";
+      const size = rand(14, 34);
+      const left = rand(0, 100);
+      const dur = rand(7, 13);
+      const delay = rand(0, 1.2);
+
+      h.style.left = left + "vw";
+      h.style.bottom = "-10vh";
+      h.style.fontSize = size + "px";
+      h.style.animationDuration = dur + "s";
+      h.style.animationDelay = delay + "s";
+
+      floatLayer.appendChild(h);
+      setTimeout(() => h.remove(), (dur + delay) * 1000 + 300);
+    }
+    setInterval(spawnFloatingHeart, 600);
+    for(let i=0;i<10;i++) spawnFloatingHeart();
+
+    // Main falling hearts
+    function spawnHeart(){
+      if (!running) return;
+
+      const rect = gameEl.getBoundingClientRect();
+      const heart = document.createElement("div");
+      heart.className = "heart";
+
+      const isGood = Math.random() < CONFIG.goodHeartChance;
+      heart.textContent = isGood ? "💚" : "❤️‍🔥";
+      heart.dataset.points = String(isGood ? CONFIG.goodPoints : CONFIG.badPoints);
+
+      const x = rand(8, rect.width - 86);
+      const yStart = -50;
+      heart.style.left = `${x}px`;
+      heart.style.top = `${yStart}px`;
+
+      const onTap = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!running) return;
+
+        const pts = parseInt(heart.dataset.points, 10);
+        setScore(clamp(score + pts, -99, 999));
+
+        if (pts > 0) { tapSound("good"); vibrate(10); }
+        else { tapSound("bad"); vibrate(16); }
+
+        heart.style.transition = "transform 120ms ease, opacity 120ms ease";
+        heart.style.transform = "scale(1.35)";
+        heart.style.opacity = "0";
+        setTimeout(() => heart.remove(), 120);
+      };
+
+      heart.addEventListener("pointerdown", onTap, { passive:false });
+
+      gameEl.appendChild(heart);
+
+      const fallMs = rand(CONFIG.fallDurationMs[0], CONFIG.fallDurationMs[1]);
+      const yEnd = rect.height + 70;
+      const start = performance.now();
+
+      function tick(now){
+        if (!heart.isConnected) return;
+        const t = clamp((now - start) / fallMs, 0, 1);
+        const y = yStart + (yEnd - yStart) * t;
+        heart.style.transform = `translateY(${y}px)`;
+
+        if (t < 1 && running) requestAnimationFrame(tick);
+        else if (heart.isConnected) heart.remove();
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function clearHearts(){
+      [...gameEl.querySelectorAll(".heart")].forEach(h => h.remove());
+    }
+
+    function startGame(){
+      showModal(false);
+      showOverlay(false);
+      clearHearts();
+      setScore(0);
+      setTime(CONFIG.durationSeconds);
+      running = true;
+
+      spawnTimer = setInterval(spawnHeart, CONFIG.spawnEveryMs);
+
+      countdownTimer = setInterval(() => {
+        if (!running) return;
+        setTime(timeLeft - 1);
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+    }
+
+    function endGame(){
+      running = false;
+      if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
+      if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+
+      const won = score >= CONFIG.targetScore;
+
+      if (won){
+        resultEmoji.textContent = "🎉💘";
+        resultTitle.textContent = "You Won!";
+        resultLine.textContent = "You have won my heart 💘";
+        resultText.textContent = "Serena… will you be my Valentine? 🥺❤️";
+        yesBtn.style.display = "inline-block";
+      } else {
+        resultEmoji.textContent = "🥺💘";
+        resultTitle.textContent = "You Lost!";
+        resultLine.textContent = "You lose… but you’ll never lose me 💞";
+        resultText.textContent = "Please be my Valentine, Serena? ❤️";
+        yesBtn.style.display = "none";
+      }
+
+      showOverlay(true);
+      showModal(true);
+      setTimeout(clearHearts, 250);
+    }
+
+    async function toggleMusic(){
+      try{
+        if (!musicOn){
+          await bgMusic.play();
+          musicOn = true;
+          musicBtn.textContent = "🔊 Music: On";
+        } else {
+          bgMusic.pause();
+          musicOn = false;
+          musicBtn.textContent = "🔊 Music: Off";
+        }
+      } catch (err){
+        alert("Tap again to enable music (phones require a user tap).");
+      }
+    }
+
+    // WhatsApp redirect on YES
+    yesBtn.addEventListener("click", () => {
+      const text = "Yes baby, I'll be your Valentine 💘";
+      const url = `https://wa.me/${2347062928618}?text=${encodeURIComponent(text)}`;
+      window.location.href = url;
+    });
+
+    // Buttons
+    startBtn.addEventListener("click", startGame);
+    startBtn2.addEventListener("click", startGame);
+    toggleMusic2.addEventListener("click", toggleMusic);
+    musicBtn.addEventListener("click", toggleMusic);
+
+    playAgain.addEventListener("click", () => {
+      showModal(false);
+      startGame();
+    });
+
+    closeModal.addEventListener("click", () => showModal(false));
+    gameEl.addEventListener("touchmove", (e) => e.preventDefault(), { passive:false });
+
+    showOverlay(true);
+  </script>
+</body>
+</html>
